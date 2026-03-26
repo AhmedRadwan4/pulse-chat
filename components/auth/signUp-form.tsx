@@ -25,7 +25,7 @@ export function SignUpForm() {
   const handleGoogleSignIn = async () => {
     await authClient.signIn.social({
       provider: 'google',
-      callbackURL: '/portal'
+      callbackURL: '/chat'
     })
   }
 
@@ -50,7 +50,7 @@ export function SignUpForm() {
       } else if (responseData) {
         toast.success('Account created! Please check your email for verification.')
         setTimeout(() => {
-          router.push('/portal')
+          router.push('/chat')
         }, 3000)
       }
     }

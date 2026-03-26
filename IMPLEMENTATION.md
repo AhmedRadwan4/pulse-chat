@@ -251,7 +251,7 @@ io.use(async (socket, next) => {
 | # | Module | Status |
 |---|---|---|
 | 1 | Schema + DB setup | ✅ Done |
-| 2 | Auth + route guards | ⬜ Todo |
+| 2 | Auth + route guards | ✅ Done |
 | 3 | Socket.IO server + Redis adapter | ⬜ Todo |
 | 4 | Channels (create, join, leave, list) | ⬜ Todo |
 | 5 | Messaging (send, edit, delete, history) | ⬜ Todo |

@@ -23,7 +23,7 @@ export function SignInForm() {
   const handleGoogleSignIn = async () => {
     await authClient.signIn.social({
       provider: 'google',
-      callbackURL: '/portal'
+      callbackURL: '/chat'
     })
   }
 
@@ -40,7 +40,7 @@ export function SignInForm() {
       const { data: responseData, error: responseError } = await authClient.signIn.email({
         email: value.email,
         password: value.password,
-        callbackURL: '/portal'
+        callbackURL: '/chat'
       })
       if (responseError) {
         toast.error(responseError.message ?? 'An unknown error occurred.')
