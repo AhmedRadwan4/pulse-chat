@@ -1,0 +1,295 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// AUTH — Better Auth compatible (keep field names exact)
+// ============================================================
+
+model User {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+
+  // Better Auth admin plugin fields
+  role       String?   // "admin" | "user" — BA admin plugin
+  banned     Boolean   @default(false)
+  banReason  String?
+  banExpires DateTime?
+
+  // Chat-specific profile
+  username String? @unique
+  bio      String?
+
+  // Auth relations (required by Better Auth)
+  sessions      Session[]
+  accounts      Account[]
+  authenticator Authenticator[]
+
+  // Chat relations
+  ownedChannels Channel[]       @relation("ChannelOwner")
+  memberships   ChannelMember[]
+  messages      Message[]
+  reactions     Reaction[]
+  readReceipts  ReadReceipt[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expiresAt DateTime
+  token     String   @unique
+  ipAddress String?
+  userAgent String?
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId             String
+  providerId            String
+  userId                String    @db.Uuid
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  identifier String
+  value      String
+  expiresAt  DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("verification")
+}
+
+model Authenticator {
+  credentialID         String  @id
+  userId               String  @db.Uuid
+  providerAccountId    String
+  credentialPublicKey  String
+  counter              Int
+  credentialDeviceType String
+  credentialBackedUp   Boolean
+  transports           String?
+  user                 User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, credentialID])
+  @@map("authenticator")
+}
+
+// ============================================================
+// CHANNELS
+// ============================================================
+
+enum ChannelType {
+  PUBLIC
+  PRIVATE
+  DIRECT
+}
+
+model Channel {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String?
+  description String?
+  type        ChannelType @default(PUBLIC)
+  createdById String      @db.Uuid
+  createdBy   User        @relation("ChannelOwner", fields: [createdById], references: [id])
+
+  members  ChannelMember[]
+  messages Message[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([type])
+  @@map("channel")
+}
+
+enum MemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+model ChannelMember {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  channelId String     @db.Uuid
+  channel   Channel    @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  userId    String     @db.Uuid
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      MemberRole @default(MEMBER)
+
+  joinedAt DateTime @default(now())
+
+  @@unique([channelId, userId])
+  @@index([userId])
+  @@map("channel_member")
+}
+
+// ============================================================
+// MESSAGES
+// ============================================================
+
+model Message {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  channelId String  @db.Uuid
+  channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  senderId  String  @db.Uuid
+  sender    User    @relation(fields: [senderId], references: [id])
+
+  content String?
+
+  // If set, this message is a reply inside a thread
+  threadId String? @db.Uuid
+  thread   Thread? @relation("ThreadReplies", fields: [threadId], references: [id])
+
+  editedAt  DateTime?
+  deletedAt DateTime? // soft delete — never hard-delete messages
+
+  attachments  Attachment[]
+  reactions    Reaction[]
+  readReceipts ReadReceipt[]
+
+  // Back-relation: this message is the parent of a thread
+  parentThread Thread? @relation("ParentThread")
+
+  createdAt DateTime @default(now())
+
+  @@index([channelId, createdAt])
+  @@index([senderId])
+  @@map("message")
+}
+
+// ============================================================
+// THREADS
+// ============================================================
+
+model Thread {
+  id              String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  parentMessageId String  @unique @db.Uuid
+  parentMessage   Message @relation("ParentThread", fields: [parentMessageId], references: [id])
+  channelId       String  @db.Uuid
+
+  replies Message[] @relation("ThreadReplies")
+
+  createdAt DateTime @default(now())
+
+  @@map("thread")
+}
+
+// ============================================================
+// ATTACHMENTS
+// ============================================================
+
+enum AttachmentType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+  AUDIO
+}
+
+model Attachment {
+  id        String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  messageId String         @db.Uuid
+  message   Message        @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  url       String
+  type      AttachmentType
+  name      String
+  size      Int            // bytes
+
+  createdAt DateTime @default(now())
+
+  @@map("attachment")
+}
+
+// ============================================================
+// REACTIONS
+// ============================================================
+
+model Reaction {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  messageId String  @db.Uuid
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String  @db.Uuid
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emoji     String
+
+  createdAt DateTime @default(now())
+
+  @@unique([messageId, userId, emoji])
+  @@map("reaction")
+}
+
+// ============================================================
+// READ RECEIPTS
+// ============================================================
+
+model ReadReceipt {
+  id        String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  messageId String  @db.Uuid
+  message   Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+  userId    String  @db.Uuid
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  readAt DateTime @default(now())
+
+  @@unique([messageId, userId])
+  @@index([userId])
+  @@map("read_receipt")
+}
+
+// ============================================================
+// WEBHOOK EVENTS (idempotent store for inbound webhooks)
+// ============================================================
+
+model WebhookEvent {
+  id              String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider        String
+  providerEventId String
+  type            String
+  payload         Json
+  processedAt     DateTime?
+  error           String?
+  retryCount      Int       @default(0)
+  failedAt        DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@unique([provider, providerEventId])
+  @@index([provider, type, processedAt])
+  @@map("webhook_event")
+}

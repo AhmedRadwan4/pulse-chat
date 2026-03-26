@@ -1,0 +1,23 @@
+[
+  { "name": "User", "slug": "user" },
+  { "name": "Role", "slug": "role" },
+  { "name": "Permission", "slug": "permission" },
+  { "name": "User Role", "slug": "userRole" },
+  { "name": "Role Permission", "slug": "rolePermission" },
+  { "name": "Instructor Profile", "slug": "instructorProfile" },
+  { "name": "Guardian Student", "slug": "guardianStudent" },
+  { "name": "Wallet", "slug": "wallet" },
+  { "name": "Wallet Transaction", "slug": "walletTransaction" },
+  { "name": "Payment", "slug": "payment" },
+  { "name": "Invoice", "slug": "invoice" },
+  { "name": "Session Template", "slug": "sessionTemplate" },
+  { "name": "Session Instance", "slug": "sessionInstance" },
+  { "name": "Booking", "slug": "booking" },
+  { "name": "Attendance", "slug": "attendance" },
+  { "name": "Payout", "slug": "payout" },
+  { "name": "Notification", "slug": "notification" },
+  { "name": "Audit Log", "slug": "auditLog" },
+  { "name": "Webhook Event", "slug": "webhookEvent" },
+  { "name": "Report", "slug": "report" },
+  { "name": "System", "slug": "system" }
+]
