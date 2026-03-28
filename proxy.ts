@@ -1,13 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import {
-  apiAuthPrefix,
-  authRoutes,
-  chatRoutes,
-  defaultLoginRedirect,
-  publicApiPrefixes,
-  publicRoutes
-} from '@/routes'
+import { apiAuthPrefix, authRoutes, chatRoutes, defaultLoginRedirect, publicApiPrefixes, publicRoutes } from '@/routes'
 
 type BetterAuthSession = {
   user: {

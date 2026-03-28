@@ -3,9 +3,6 @@
     "next-devtools": {
       "command": "npx",
       "args": ["-y", "next-devtools-mcp@latest"]
-    },
-    "Prisma-Remote": {
-      "url": "https://mcp.prisma.io/mcp"
     }
   }
 }

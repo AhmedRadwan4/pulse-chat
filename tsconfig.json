@@ -34,11 +34,11 @@
       }
     ],
     "paths": {
-      "@/*": ["./*", "./src/"]
+      "@/*": ["./*", "./src/"],
+      "@pulse-chat/shared": ["./packages/shared/src/index.ts"]
     }
   },
   "include": [
-    "prisma/**/*.ts",
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",

@@ -12,9 +12,7 @@ export default function AuthErrorPage() {
         </div>
         <div className='flex flex-col gap-1'>
           <h1 className='font-semibold text-xl'>Authentication Error</h1>
-          <p className='text-muted-foreground text-sm'>
-            Something went wrong during sign in. Please try again.
-          </p>
+          <p className='text-muted-foreground text-sm'>Something went wrong during sign in. Please try again.</p>
         </div>
         <Button asChild>
           <Link href='/auth/signin'>Back to Sign In</Link>

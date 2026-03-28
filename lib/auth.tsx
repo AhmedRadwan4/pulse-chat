@@ -1,7 +1,7 @@
+import { kyselyAdapter } from '@better-auth/kysely-adapter'
 import { betterAuth } from 'better-auth'
-import { prismaAdapter } from 'better-auth/adapters/prisma'
 import { admin } from 'better-auth/plugins'
-import prisma from '@/lib/prisma-client'
+import { db } from '@/lib/db'
 
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID
 if (!GOOGLE_CLIENT_ID) {
@@ -24,8 +24,8 @@ if (!GITHUB_CLIENT_SECRET) {
 }
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, {
-    provider: 'postgresql'
+  database: kyselyAdapter(db, {
+    type: 'postgres'
   }),
   emailAndPassword: {
     enabled: true,

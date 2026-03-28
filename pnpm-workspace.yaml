@@ -1,3 +1,7 @@
+packages:
+  - 'server'
+  - 'packages/*'
+
 onlyBuiltDependencies:
   - '@parcel/watcher'
   - '@prisma/engines'
